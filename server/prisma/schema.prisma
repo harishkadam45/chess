@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---- Better Auth tables ----
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Chess profile
+  ratingBullet  Int       @default(1200)
+  ratingBlitz   Int       @default(1200)
+  ratingRapid   Int       @default(1200)
+  wins          Int       @default(0)
+  losses        Int       @default(0)
+  draws         Int       @default(0)
+
+  sessions      Session[]
+  accounts      Account[]
+  whiteGames    Game[]    @relation("White")
+  blackGames    Game[]    @relation("Black")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ---- Chess ----
+model Game {
+  id               String   @id
+  whiteId          String
+  blackId          String
+  white            User     @relation("White", fields: [whiteId], references: [id])
+  black            User     @relation("Black", fields: [blackId], references: [id])
+  category         String   // bullet | blitz | rapid
+  baseSeconds      Int
+  incrementSeconds Int
+  rated            Boolean  @default(true)
+  result           String   // 1-0 | 0-1 | 1/2-1/2
+  reason           String   // checkmate | resign | timeout | stalemate | repetition | insufficient | fifty-move | agreement
+  pgn              String
+  whiteRatingBefore Int
+  blackRatingBefore Int
+  whiteRatingAfter  Int
+  blackRatingAfter  Int
+  createdAt        DateTime @default(now())
+
+  @@index([whiteId])
+  @@index([blackId])
+  @@index([createdAt])
+}

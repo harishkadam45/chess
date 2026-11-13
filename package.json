@@ -1,0 +1,16 @@
+{
+  "name": "chess-platform",
+  "private": true,
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "test": "npm test -w server",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w web",
+    "db:push": "npm run db:push -w server",
+    "test:e2e": "npm run test:e2e -w web"
+  }
+}

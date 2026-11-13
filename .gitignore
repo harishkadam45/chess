@@ -1,0 +1,14 @@
+node_modules
+.next
+.env
+.env.local
+web/public/stockfish
+mobile/.expo
+mobile/dist
+*.log
+test-results
+playwright-report
+
+# mobile/ has its own git repository
+mobile/
+*.tsbuildinfo
